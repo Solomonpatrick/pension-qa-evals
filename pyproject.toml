@@ -1,0 +1,27 @@
+[project]
+name = "pensionqa"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "anthropic>=1.9",
+    "rank-bm25",
+    "python-dotenv",
+    "requests",
+    "beautifulsoup4",
+    "fastapi",
+    "uvicorn",
+    "mcp>=2",
+]
+
+[project.optional-dependencies]
+dev = ["pytest", "pytest-playwright", "anyio"]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
