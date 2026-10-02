@@ -15,3 +15,34 @@ Surprises, failures and fixes, logged as they happen.
   value. Git uses the last value, so every commit would have had a broken author email. Removed the bad line.
 - **pytest exits with code 5 when it collects no tests.** Fine locally, but a CI step treats any non-zero exit
   as a failure, so CI needs at least one real test before it can go green.
+
+## Phase 1: corpus and retrieval (2026-10-03)
+
+The guide's code passed every test first time. Checking the saved pages against the live site showed the
+data was still wrong in places, so passing tests didn't mean the corpus was right.
+
+- **Bad URLs don't 404 on GOV.UK.** A mistyped guide part redirects to the guide, an old URL redirected to a
+  different page entirely, and a guide's first part also lives at a second URL. All of them return 200, so
+  `raise_for_status()` never fires. The fetcher now stops if the page's canonical link isn't the URL it asked for.
+- **The contribution rates (3%, 5%, 8%) only exist in a table.** Skip tables and they silently disappear.
+  Read the table as plain text and the numbers lose their headers. A test now checks that row.
+- **The step-by-step sidebar repeats on 10 of the 18 pages.** Left in, it adds 20 chunks of navigation.
+  A test checks it stays out.
+- **Headings were getting lost.** Guide pages have two `<h1>`s and the code kept only the first, so three pages
+  were all titled "Workplace pensions". Subheadings also lost their parent: two chunks were both labelled
+  "What you'll get", with nothing saying which pension type. After fixing both, the defined benefit chunk went
+  from rank 13 to 4 for "how is a final salary pension worked out".
+- **One of the guide's tests couldn't fail.** The size check allowed 270 words, but no chunk gets that big even
+  with splitting switched off. It now checks the real rule.
+
+Known issues, left for later:
+- The "money purchase" alias also rewrites the name "money purchase annual allowance". A Phase 3 alias test.
+- rank_bm25 gives words found in most chunks a floor score, so "pension" ends up counting for more than "tax".
+  Worth tuning once there's a golden dataset.
+- On Windows the data files have CRLF line endings, so hash the text, not the file bytes, for the dataset hash.
+
+Decisions:
+- Kept the guide's 18 pages, though they cover only 15 of the 51 parts of their guides. A fixed corpus keeps
+  eval scores comparable, and the missing topics make good "not in the guidance" test cases.
+- Kept `state-pension-age`, though it's a calculator page with no actual ages on it. It's the only page that
+  defines State Pension age, and a useful trap: a good answer points to the calculator instead of guessing.
