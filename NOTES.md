@@ -46,3 +46,17 @@ Decisions:
   eval scores comparable, and the missing topics make good "not in the guidance" test cases.
 - Kept `state-pension-age`, though it's a calculator page with no actual ages on it. It's the only page that
   defines State Pension age, and a useful trap: a good answer points to the calculator instead of guessing.
+
+## Phase 2: cited answers (2026-10-05)
+
+- **The answer can only be as good as retrieval.** "How much must my employer pay into my workplace pension?"
+  got an honest "the sources don't state the minimum percentage". The chunk with the 3%/5%/8% table ranked 17th,
+  outside the top 5, even though the right page ranked first, so the Phase 1 page-level test still passed. The
+  model didn't fill the gap from memory, which is what we want. It's a ready-made Phase 3 test case.
+- **Small instruction slips.** Two answers ran over the 150-word limit (157 and 162 words), and one sentence with
+  figures had no tag of its own: the figures were real, but the tag sat on the next sentence. Phase 3 checks
+  should catch both.
+- **Refusals get recorded, not hidden.** Every answer stores the model's `stop_reason`, so a refusal or a cut-off
+  answer shows up instead of looking like a short one. I left the API's automatic refusal fallback off: it reruns
+  a refused request on another model, and the eval would then credit Sonnet with an answer it didn't write.
+- Six scripted questions cost $0.022 in total, about 0.4p each.
