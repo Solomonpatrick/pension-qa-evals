@@ -60,3 +60,20 @@ Decisions:
   answer shows up instead of looking like a short one. I left the API's automatic refusal fallback off: it reruns
   a refused request on another model, and the eval would then credit Sonnet with an answer it didn't write.
 - Six scripted questions cost $0.022 in total, about 0.4p each.
+
+## Phase 3: golden dataset (2026-10-08)
+
+- **Three of the guide's seven starting cases didn't match our pages.** sp-001 listed a page that never mentions
+  the 10 qualifying years, wp-001's reference used "qualifying earnings" (a term the guidance never uses), and
+  adv-001's reference described advice our page doesn't give. Fixed before v1 was published.
+- **The guide's dataset tests only checked the shape.** I added one that checks every `must_include` fact is on
+  one of the case's pages, and every page listed holds one of its facts. That's what makes "re-fetch and rerun"
+  catch a changed figure, and it caught sp-001. The catch: a page that says the same thing in other words
+  ("basic tax rate" rather than "20%") can't be listed as a source.
+- **A second reviewer found 13 problems in the 60 cases.** The worst was a yes/no question whose figure a correct
+  answer didn't need to mention. Another was the guide's alias case, whose check ("workplace") was copied from the
+  question, so even an answer of "No" passed. I fixed 12 and kept one, because the fix would have weakened its check.
+- **Known failures are in on purpose.** The employer's 3%, "What is the MPAA?" and "What's a SIPP?" cover the
+  retrieval misses from Phases 1 and 2, so Phase 4 measures them instead of hiding them.
+- **State Pension age is left for Phase 10.** The right answer is "use the calculator", and that behaviour
+  (`use_calculator`) arrives then.
