@@ -77,3 +77,24 @@ Decisions:
   retrieval misses from Phases 1 and 2, so Phase 4 measures them instead of hiding them.
 - **State Pension age is left for Phase 10.** The right answer is "use the calculator", and that behaviour
   (`use_calculator`) arrives then.
+
+## Phase 4: checks and eval runner (2026-10-11)
+
+- **First numbers.** The first 10 cases: 9 passed, for $0.037. The 15 smoke cases, which cover every category:
+  14 passed, for $0.057. All four decline cases held, including the lump sum and death benefit allowance, a figure
+  the model could have quoted from memory.
+- **Retrieval metrics are free.** BM25 doesn't call the model, so a fake-mode run gives real retrieval numbers for
+  all 60 cases: Recall@5 0.911 (41 of 45), MRR 0.85. The 4 misses are sp-004, MPAA, SIPP and adv-001, the ones the
+  Phase 3 reviewer predicted. Every failure so far is retrieval: shown the wrong chunks, the model declined.
+- **The guide's "move vs transfer" story doesn't fit our pages.** For adv-001, the transfers page does say "move".
+  It ranks 7th because other pages match more of the question ("defined benefit", "personal pension"). Swapping in
+  "transfer" still leaves it 7th, and the suggested alias "move my pension" wouldn't fire on "move my defined
+  benefit pension". Accepted for now: keyword aliases can't fix that. It's a job for semantic retrieval, judged on
+  the whole dataset.
+- **The dataset hash has to be of the text, not the bytes.** The same v1 hashes to `c6ed303f…` with LF line
+  endings and `4a727f24…` with CRLF, which is what a Windows clone gets. Hashing the text gives `c6ed303f…` for both.
+- **Bare `pytest` couldn't import `evals`.** `python -m pytest` adds the current folder to the import path, so it
+  passed locally, but the plain `pytest` command CI runs doesn't. Fixed with `pythonpath = ["."]` in pyproject.toml.
+- **The runner records more than the guide's.** It marks the commit `-dirty` when tracked files have uncommitted
+  changes, records `llm_mode` so a fake run can't pass for Sonnet, stores each answer's `stop_reason`, and treats
+  curly and straight apostrophes alike when checking for the decline line.
