@@ -25,3 +25,4 @@ where = ["src"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+pythonpath = ["."]   # the evals harness lives at the repo root, outside src/
