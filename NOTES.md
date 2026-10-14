@@ -98,3 +98,23 @@ Decisions:
 - **The runner records more than the guide's.** It marks the commit `-dirty` when tracked files have uncommitted
   changes, records `llm_mode` so a fake run can't pass for Sonnet, stores each answer's `stop_reason`, and treats
   curly and straight apostrophes alike when checking for the decline line.
+
+## Phase 5: LLM judge (2026-10-14)
+
+- **First judged run.** On the 15 smoke cases, 10 answers were judged: hallucination rate 0.0, correctness 4.9 out
+  of 5, source quality 3 out of 3, no judge errors. It cost $0.134 for answering and judging together.
+- **I read all ten rationales against the sources and agree with all ten.** The useful one is tax-001: correctness 4,
+  because the answer never gives the 20% rate for relief at source. Its only "20%" is in a side sentence about
+  someone else paying in, and the Phase 4 `must_include` check passed on that stray "20%". Word matching can't tell
+  where a fact appears; the judge can.
+- **No sign of self-preference, but some noise.** I re-graded the same ten answers. Opus 5.5 matched Sonnet on all
+  ten, while Sonnet grading again changed one score: alias-001 went from 5 to 4. I disagree with that 4. Part of its
+  reason was supported extra detail, and the rubric never says extra detail lowers correctness. That gap is a fix
+  for `judge_v2`, not an edit to v1, since v1 produced these results. The re-grades cost $0.076 (Sonnet) and
+  $0.159 (Opus).
+- **These were easy cases.** All ten answers were grounded and scored 4 or 5, so judges agreeing shows little about
+  whether they'd catch a hallucination. That needs answers with known errors in them.
+- **Judge plumbing.** `grounded` is worked out from the judge's claim list, so the hallucination rate can't
+  contradict the claims it lists. A refused or cut-off judgement keeps its cost and counts in `judge_errors`. Rows
+  store the full claim list, and runs record the judge's effort. The longest judgement used 665 output tokens, so
+  raising the cap to 16,000 is headroom, not a fix.
