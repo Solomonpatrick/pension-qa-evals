@@ -64,6 +64,7 @@ def summarise(rows: list[dict]) -> dict:
         "hallucination_rate": round(sum(not r["grounded"] for r in judged) / len(judged), 3) if judged else None,
         "correctness": mean("correctness"),
         "source_quality": mean("source_quality"),
+        "judge_errors": sum(1 for r in rows if r.get("error")),   # refused or cut-off judgements
         "p95_latency_ms": latencies[int(0.95 * (len(latencies) - 1))] if latencies else None,
         "cost_usd": round(sum(r["cost_usd"] for r in rows), 4),
     }
@@ -89,7 +90,7 @@ def run(args) -> dict:
             }
             if judge_llm and checks.get("answered"):
                 grade = judge(case, ans, judge_llm)
-                row.update({k: grade.get(k) for k in ("grounded", "correctness", "source_quality",
+                row.update({k: grade.get(k) for k in ("grounded", "correctness", "source_quality", "claims",
                                                        "unsupported_claims", "rationale", "error")})
                 row["cost_usd"] += cost_usd(config.JUDGE_MODEL, *grade.get("judge_tokens", [0, 0]))
             rows.append(row)
@@ -111,7 +112,8 @@ def run(args) -> dict:
             "subset": args.subset, "cases": len(cases), "repeats": args.repeats,
             "llm_mode": config.LLM_MODE,   # "fake" runs must not look like real model results
             "answer_model": config.ANSWER_MODEL, "answer_effort": config.ANSWER_EFFORT,
-            "judge_model": config.JUDGE_MODEL if args.judge else None, "rubric": RUBRIC_VERSION,
+            "judge_model": config.JUDGE_MODEL if args.judge else None,
+            "judge_effort": config.JUDGE_EFFORT if args.judge else None, "rubric": RUBRIC_VERSION,
             "prompt_version": config.PROMPT_VERSION, "top_k": config.TOP_K,
         },
         "summary": summarise(rows),

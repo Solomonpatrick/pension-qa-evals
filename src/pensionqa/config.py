@@ -19,4 +19,4 @@ TOP_K = 5
 PROMPT_VERSION = "rag-v1"
 
 # USD per million tokens (input, output). Check the pricing page when you change models.
-PRICES = {"claude-sonnet-5-5": (2.0, 10.0)}
+PRICES = {"claude-sonnet-5-5": (2.0, 10.0), "claude-opus-5-5": (4.0, 20.0)}
